@@ -1,15 +1,34 @@
 import funcTime
 import stats
+import lin_func
+import timeit
+import random
+import matplotlib.pyplot as plt
+"""
+times = []
+nvals = []
+for num in range(10000, 200000, 10000):
+    func_string = "lin_func.linear_function(" + str(num) + ")"
+    print func_string
+    t = timeit.Timer(func_string, "from __main__ import lin_func")
+    nvals.append(num)
+    times.append(t.timeit(20))
 
-test_set1 = [2, 4, 4, 4, 5, 5, 7, 9.0]
-test_set2 = [4, 16, 10, 13, 36, 25, 50, 90]
+"""
 
-print "Mean:", stats.mean(test_set1)
+nvals = range(1, 100000, 1000)
+times = []
 
-print "Standard deviation:", stats.standard_deviation(test_set1)
+coef = [0, 0, 1, 1]
+for value in nvals:
+    value = float(value)
+    times.append(coef[0] * pow(value, 3) + coef[1] * pow(value, 2) + 
+                 coef[2] * pow(value, 1) + coef[3] * pow(value, 0))
 
-print "Linear Fitness:", funcTime.linear_fitness(test_set1, test_set2)
+order = funcTime.data_order(nvals, times, True)
 
-print "Quadradic Fitness:", funcTime.quadradic_fitness(test_set1, test_set2)
+print "order: %d" % (order)
 
-print "data order:", funcTime.data_order(test_set1, test_set2)
+#plt.plot(nvals, times, 'ro')
+#plt.axis([0, 20000, 0, 0.5])
+#plt.show()

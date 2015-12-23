@@ -5,22 +5,23 @@ takes two parellel lists and uses the data in them to determine the
 function order that best fits the point pairs
 """
 
-def data_order(n_vals, time_vals):
+def data_order(n_vals, time_vals, verbose=False):
     if len(n_vals) != len(time_vals):
         print "Warning: parameters to data_order do not have the same length"
 
 
-    linear_deviation = linear_fitness(n_vals, time_vals)
-    quadradic_deviation = quadradic_fitness(n_vals, time_vals)
+    linear_error = linear_fitness(n_vals, time_vals)
+    quadradic_error = quadradic_fitness(n_vals, time_vals)
 
-    # poor model for the moment
-    #TODO: make more informative, accurate
-    if linear_deviation < quadradic_deviation:
-        order = 1
-    else:
-        order = 2
+    order_fitness = []
+    for power in range(0, 4):
+        fitness = poly_fitness(n_vals, time_vals, power)
+        order_fitness.append(fitness)
+        if verbose:
+            print "Fitness for order %d: %f" % (power, fitness)
 
-    return order
+    return order_fitness.index(min(order_fitness))
+    
 
 """
 current implementation plan:
@@ -51,8 +52,13 @@ def linear_fitness(n_vals, time_vals):
     for nval, timeval in itertools.izip(n_vals, time_vals):
         ratios.append(float(timeval) / nval)
 
-    fitness = stats.standard_deviation(ratios)
-    return fitness
+    stand_dev = stats.standard_deviation(ratios)
+    mean_quotient = stats.mean(ratios)
+
+    error = 0
+    for quotient in ratios:
+        error += abs(quotient - mean_quotient) / stand_dev
+    return error
 
 def quadradic_fitness(n_vals, time_vals):
     ratios = []
@@ -60,5 +66,31 @@ def quadradic_fitness(n_vals, time_vals):
     for nval, timeval in itertools.izip(n_vals, time_vals):
         ratios.append(float(timeval) / (nval * nval))
 
-    fitness = stats.standard_deviation(ratios)
-    return fitness
+    stand_dev = stats.standard_deviation(ratios)
+    mean_quotient = stats.mean(ratios)
+
+    error = 0
+    for quotient in ratios:
+        error += (abs(quotient - mean_quotient)) / stand_dev
+    return error
+
+"""
+generic test for polynomial, where the power of the highest order term = 'power'
+
+potential problems: 
+    other terms will almost certainly ruin fitness tests for coordinate pairs 
+    with only low magnitude n_vals
+"""
+def poly_fitness(n_vals, time_vals, power):
+    ratios = []
+
+    for nval, timeval in itertools.izip(n_vals, time_vals):
+        ratios.append(float(timeval) / pow(nval, power))
+
+    stand_dev = stats.standard_deviation(ratios)
+    mean_quotient = stats.mean(ratios)
+
+    error = 0
+    for quotient in ratios:
+        error += (abs(quotient - mean_quotient)) / stand_dev
+    return error
